@@ -1,7 +1,7 @@
-import { ACC_TYPE, IAccount } from "../model/account"
-import { IWithdrawlValidation } from "../model/transaction";
+import { AccountType, IAccount } from "../model/account"
+import { ITransActions, IWithdrawlValidation } from "../model/transaction";
 
-export const validateWithdrawl = (transactionAmount: number, account: IAccount): IWithdrawlValidation => {
+export const validateWithdrawl = (transactionAmount: number, account: IAccount, withdrawls: Array<ITransActions>): IWithdrawlValidation => {
   const { amount: curBalance, type: accType, credit_limit: creditLimit } = account;
 
   if (transactionAmount > 200) {
@@ -13,10 +13,14 @@ export const validateWithdrawl = (transactionAmount: number, account: IAccount):
   }
 
   if (transactionAmount > curBalance) {
-    if (accType === ACC_TYPE.credit && creditLimit && curBalance + creditLimit >= transactionAmount) {
+    if (accType === AccountType.credit && creditLimit && curBalance + creditLimit >= transactionAmount) {
       return { valid: true, msg: "ok" }
     }
-    return { valid: false, msg: `Transaction exceeds available ${accType === ACC_TYPE.credit ? 'credit limit' : 'account balance'} of ${ACC_TYPE.credit && creditLimit ? creditLimit + curBalance : curBalance}.` }
+    return { valid: false, msg: `Transaction exceeds available ${accType === AccountType.credit ? 'credit limit' : 'account balance'} of ${AccountType.credit && creditLimit ? creditLimit + curBalance : curBalance}.` }
+  }
+
+  if (withdrawls.length >= 4) {
+    return {valid: false, msg: 'This account only allows 4 withdrawls a day. Current withdrawl exceeds that limit.'}
   }
 
   return { valid: true, msg: "ok" }

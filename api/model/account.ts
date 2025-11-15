@@ -2,11 +2,11 @@ export interface IAccount {
   account_number: number;
   name: string;
   amount: number;
-  type: ACC_TYPE;
+  type: AccountType;
   credit_limit?: number;
 }
 
-export enum ACC_TYPE {
+export enum AccountType {
   checking = 'checking',
   savings = 'savings',
   credit = 'credit'
