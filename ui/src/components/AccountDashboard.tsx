@@ -41,103 +41,111 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
   }
 
   const withdrawFunds = async () => {
-    const requestOptions = {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: withdrawAmount })
-    }
-    try {
-      const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
-      const data = await response.json();
-
-      if (data.error) {
-        setAlertContent(data.error)
-        setAlerttType('error')
-        setShowAlert(true)
-      } else {
-        setAccount({
-          accountNumber: data.account_number,
-          name: data.name,
-          amount: data.amount,
-          type: data.type,
-          creditLimit: data.credit_limit
-        });
-
-        setAlertContent('Withdrawl completed successfully.')
-        setAlerttType('success')
-        setShowAlert(true)
+    if (withdrawAmount > 0) {
+      const requestOptions = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: withdrawAmount })
       }
-    } catch (error) {
-      console.error(JSON.stringify(error))
+      try {
+        const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
+        const data = await response.json();
+
+        if (data.error) {
+          setAlertContent(data.error)
+          setAlerttType('error')
+          setShowAlert(true)
+        } else {
+          setAccount({
+            accountNumber: data.account_number,
+            name: data.name,
+            amount: data.amount,
+            type: data.type,
+            creditLimit: data.credit_limit
+          });
+
+          setAlertContent('Withdrawl completed successfully.')
+          setAlerttType('success')
+          setShowAlert(true)
+        }
+      } catch (error) {
+        console.error(JSON.stringify(error))
+      }
+    } else {
+      setAlertContent('Withdrawl amount must be larger than 0')
+      setAlerttType('error')
+      setShowAlert(true)
     }
   }
 
   return (
-    <><Paper className="account-dashboard">
-      <div className="dashboard-header">
-        <h1>Hello, {account.name}!</h1>
-        <Button variant="contained" onClick={signOut}>Sign Out</Button>
-      </div>
-      <h2>Balance: ${account.amount}</h2>
-      <Grid container spacing={2} padding={2}>
-        <Grid item xs={6}>
-          <Card className="deposit-card">
-            <CardContent>
-              <h3>Deposit</h3>
-              <TextField
-                label="Deposit Amount"
-                variant="outlined"
-                type="number"
-                sx={{
-                  display: 'flex',
-                  margin: 'auto',
-                }}
-                onChange={(e) => setDepositAmount(+e.target.value)}
-              />
-              <Button
-                variant="contained"
-                sx={{
-                  display: 'flex',
-                  margin: 'auto',
-                  marginTop: 2
-                }}
-                onClick={depositFunds}
-              >
-                Submit
-              </Button>
-            </CardContent>
-          </Card>
+    <>
+      <Paper className="account-dashboard">
+        <div className="dashboard-header">
+          <h1>Hello, {account.name}!</h1>
+          <Button variant="contained" onClick={signOut}>Sign Out</Button>
+        </div>
+        <h2>Balance: ${account.amount}</h2>
+        <Grid container spacing={2} padding={2}>
+          <Grid item xs={6}>
+            <Card className="deposit-card">
+              <CardContent>
+                <h3>Deposit</h3>
+                <TextField
+                  label="Deposit Amount"
+                  variant="outlined"
+                  type="number"
+                  sx={{
+                    display: 'flex',
+                    margin: 'auto',
+                  }}
+                  onChange={(e) => setDepositAmount(+e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  sx={{
+                    display: 'flex',
+                    margin: 'auto',
+                    marginTop: 2
+                  }}
+                  onClick={depositFunds}
+                >
+                  Submit
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6}>
+            <Card className="withdraw-card">
+              <CardContent>
+                <h3>Withdraw</h3>
+                <TextField
+                  label="Withdraw Amount"
+                  variant="outlined"
+                  type="number"
+                  sx={{
+                    display: 'flex',
+                    margin: 'auto',
+                  }}
+                  onChange={(e) => setWithdrawAmount(+e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  disabled={withdrawAmount <= 0}
+                  sx={{
+                    display: 'flex',
+                    margin: 'auto',
+                    marginTop: 2
+                  }}
+                  onClick={withdrawFunds}
+                >
+                  Submit
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-        <Grid item xs={6}>
-          <Card className="withdraw-card">
-            <CardContent>
-              <h3>Withdraw</h3>
-              <TextField
-                label="Withdraw Amount"
-                variant="outlined"
-                type="number"
-                sx={{
-                  display: 'flex',
-                  margin: 'auto',
-                }}
-                onChange={(e) => setWithdrawAmount(+e.target.value)}
-              />
-              <Button
-                variant="contained"
-                sx={{
-                  display: 'flex',
-                  margin: 'auto',
-                  marginTop: 2
-                }}
-                onClick={withdrawFunds}
-              >
-                Submit
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Paper>
+      </Paper>
       {showAlert &&
         <Alert
           variant="filled"
