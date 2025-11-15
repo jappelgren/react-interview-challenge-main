@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import {account} from "../Types/Account"
+import { account } from "../Types/Account"
 import Paper from "@mui/material/Paper/Paper";
 import { Button, Card, CardContent, Grid, TextField } from "@mui/material";
 
@@ -11,42 +11,50 @@ type AccountDashboardProps = {
 export const AccountDashboard = (props: AccountDashboardProps) => {
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [account, setAccount] = useState(props.account); 
+  const [account, setAccount] = useState(props.account);
 
-  const {signOut} = props;
+  const { signOut } = props;
 
   const depositFunds = async () => {
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({amount: depositAmount})
+      body: JSON.stringify({ amount: depositAmount })
     }
-    const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/deposit`, requestOptions);
-    const data = await response.json();
-    setAccount({
-      accountNumber: data.account_number,
-      name: data.name,
-      amount: data.amount,
-      type: data.type,
-      creditLimit: data.credit_limit
-    });
+    try {
+      const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/deposit`, requestOptions);
+      const data = await response.json();
+      setAccount({
+        accountNumber: data.account_number,
+        name: data.name,
+        amount: data.amount,
+        type: data.type,
+        creditLimit: data.credit_limit
+      });
+    } catch (error) {
+      console.error(JSON.stringify(error))
+    }
   }
 
   const withdrawFunds = async () => {
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({amount: withdrawAmount})
+      body: JSON.stringify({ amount: withdrawAmount })
     }
-    const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
-    const data = await response.json();
-    setAccount({
-      accountNumber: data.account_number,
-      name: data.name,
-      amount: data.amount,
-      type: data.type,
-      creditLimit: data.credit_limit
-    });
+    try {
+      const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
+      const data = await response.json();
+      setAccount({
+        accountNumber: data.account_number,
+        name: data.name,
+        amount: data.amount,
+        type: data.type,
+        creditLimit: data.credit_limit
+      });
+    } catch (error) {
+      console.error(JSON.stringify(error))
+    }
   }
 
   return (
@@ -61,9 +69,9 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
           <Card className="deposit-card">
             <CardContent>
               <h3>Deposit</h3>
-              <TextField 
-                label="Deposit Amount" 
-                variant="outlined" 
+              <TextField
+                label="Deposit Amount"
+                variant="outlined"
                 type="number"
                 sx={{
                   display: 'flex',
@@ -71,12 +79,13 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
                 }}
                 onChange={(e) => setDepositAmount(+e.target.value)}
               />
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 sx={{
-                  display: 'flex', 
-                  margin: 'auto', 
-                  marginTop: 2}}
+                  display: 'flex',
+                  margin: 'auto',
+                  marginTop: 2
+                }}
                 onClick={depositFunds}
               >
                 Submit
@@ -88,32 +97,32 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
           <Card className="withdraw-card">
             <CardContent>
               <h3>Withdraw</h3>
-              <TextField 
-                label="Withdraw Amount" 
-                variant="outlined" 
-                type="number" 
+              <TextField
+                label="Withdraw Amount"
+                variant="outlined"
+                type="number"
                 sx={{
                   display: 'flex',
                   margin: 'auto',
                 }}
                 onChange={(e) => setWithdrawAmount(+e.target.value)}
               />
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 sx={{
-                  display: 'flex', 
-                  margin: 'auto', 
+                  display: 'flex',
+                  margin: 'auto',
                   marginTop: 2
                 }}
                 onClick={withdrawFunds}
-                >
-                  Submit
-                </Button>
+              >
+                Submit
+              </Button>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
     </Paper>
-    
+
   )
 }

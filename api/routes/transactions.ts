@@ -9,35 +9,35 @@ const transactionSchema: Schema = Joi.object({
 });
 
 router.put("/:accountID/withdraw", async (request: Request, response: Response) => {
-  const {error} = transactionSchema.validate(request.body);
+  const { error } = transactionSchema.validate(request.body);
 
   if (error) {
-    return response.status(400).send(error.details[0].message);
+    return response.status(400).send({ error: error.details[0].message });
   }
 
   try {
     const updatedAccount = await withdrawal(request.params.accountID, request.body.amount);
     return response.status(200).send(updatedAccount);
   } catch (err) {
-    if(err instanceof Error) {
-      return response.status(400).send({"error": err.message});
+    if (err instanceof Error) {
+      return response.status(400).send({ "error": err.message });
     }
   }
 });
 
 router.put("/:accountID/deposit", async (request: Request, response: Response) => {
-  const {error} = transactionSchema.validate(request.body);
+  const { error } = transactionSchema.validate(request.body);
 
   if (error) {
-    return response.status(400).send(error.details[0].message);
+    return response.status(400).send({ error: error.details[0].message });
   }
 
   try {
     const updatedAccount = await deposit(request.params.accountID, request.body.amount);
     return response.status(200).send(updatedAccount);
   } catch (err) {
-    if(err instanceof Error) {
-      return response.status(400).send({"error": err.message});
+    if (err instanceof Error) {
+      return response.status(400).send({ "error": err.message });
     }
   }
 });
