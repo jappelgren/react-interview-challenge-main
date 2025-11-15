@@ -7,10 +7,10 @@ export const withdrawal = async (accountID: string, amount: number) => {
   try {
     await query('BEGIN')
     const account = await getAccount(accountID);
-    
+
     const todaysWithdrawls = await getCurrDayTransactions(account.account_number, TransactionType.withdrawl)
     const validWithdrawl = validateWithdrawl(amount, account, todaysWithdrawls)
-    
+
     if (validWithdrawl.valid) {
       account.amount -= amount;
       const res = await query(`
@@ -29,12 +29,12 @@ export const withdrawal = async (accountID: string, amount: number) => {
       return account;
     }
 
-    throw new Error(`Invalid withdrawl. Reason: ${validWithdrawl.msg}`)
+    throw new Error(`Invalid withdrawl. ${validWithdrawl.msg}`)
   } catch (error) {
     await query('ROLLBACK')
     if (error instanceof Error) {
       console.error(error.message)
-      throw new Error(`Error while withdrawing funds. Error: ${error.message}`)
+      throw new Error(`${error.message}`)
     }
   }
 }

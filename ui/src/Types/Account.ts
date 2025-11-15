@@ -5,3 +5,7 @@ export type account = {
   type: string;
   creditLimit: number;
 }
+
+export enum ErrorTypes {
+  
+}

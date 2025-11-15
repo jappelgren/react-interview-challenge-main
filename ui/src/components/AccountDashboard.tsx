@@ -1,7 +1,7 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { account } from "../Types/Account"
 import Paper from "@mui/material/Paper/Paper";
-import { Button, Card, CardContent, Grid, TextField } from "@mui/material";
+import { Button, Card, CardContent, Grid, Alert, TextField } from "@mui/material";
 
 type AccountDashboardProps = {
   account: account;
@@ -12,6 +12,10 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [account, setAccount] = useState(props.account);
+
+  const [alertContent, setAlertContent] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertType, setAlerttType] = useState<'error' | 'success' | undefined>()
 
   const { signOut } = props;
 
@@ -45,20 +49,31 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
     try {
       const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
       const data = await response.json();
-      setAccount({
-        accountNumber: data.account_number,
-        name: data.name,
-        amount: data.amount,
-        type: data.type,
-        creditLimit: data.credit_limit
-      });
+
+      if (data.error) {
+        setAlertContent(data.error)
+        setAlerttType('error')
+        setShowAlert(true)
+      } else {
+        setAccount({
+          accountNumber: data.account_number,
+          name: data.name,
+          amount: data.amount,
+          type: data.type,
+          creditLimit: data.credit_limit
+        });
+
+        setAlertContent('Withdrawl completed successfully.')
+        setAlerttType('success')
+        setShowAlert(true)
+      }
     } catch (error) {
       console.error(JSON.stringify(error))
     }
   }
 
   return (
-    <Paper className="account-dashboard">
+    <><Paper className="account-dashboard">
       <div className="dashboard-header">
         <h1>Hello, {account.name}!</h1>
         <Button variant="contained" onClick={signOut}>Sign Out</Button>
@@ -123,6 +138,14 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
         </Grid>
       </Grid>
     </Paper>
-
+      {showAlert &&
+        <Alert
+          variant="filled"
+          severity={alertType}
+          onClose={() => setShowAlert(false)}
+        >
+          {alertContent}
+        </Alert>}
+    </>
   )
 }
