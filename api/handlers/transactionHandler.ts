@@ -1,6 +1,6 @@
 import { query } from "../utils/db";
 import { getAccount } from "./accountHandler";
-import { validateWithdrawl } from '../utils/transactions'
+import { validateWithdrawal } from '../utils/transactions'
 import { ITransActions, TransactionType } from "../model/transaction";
 
 export const withdrawal = async (accountID: string, amount: number) => {
@@ -8,10 +8,10 @@ export const withdrawal = async (accountID: string, amount: number) => {
     await query('BEGIN')
     const account = await getAccount(accountID);
 
-    const todaysWithdrawls = await getCurrDayTransactions(account.account_number, TransactionType.withdrawl)
-    const validWithdrawl = validateWithdrawl(amount, account, todaysWithdrawls)
+    const todaysWithdrawals = await getCurrDayTransactions(account.account_number, TransactionType.withdrawal)
+    const validWithdrawal = validateWithdrawal(amount, account, todaysWithdrawals)
 
-    if (validWithdrawl.valid) {
+    if (validWithdrawal.valid) {
       account.amount -= amount;
       const res = await query(`
         UPDATE accounts
@@ -24,12 +24,12 @@ export const withdrawal = async (accountID: string, amount: number) => {
         throw new Error("Transaction failed");
       }
 
-      recordTransaction(account.account_number, amount, TransactionType.withdrawl)
+      recordTransaction(account.account_number, amount, TransactionType.withdrawal)
       await query('COMMIT')
       return account;
     }
 
-    throw new Error(`Invalid withdrawl. ${validWithdrawl.msg}`)
+    throw new Error(`Invalid withdrawal. ${validWithdrawal.msg}`)
   } catch (error) {
     await query('ROLLBACK')
     if (error instanceof Error) {

@@ -1,4 +1,4 @@
-export interface IWithdrawlValidation {
+export interface ITransactionValidation {
   valid: boolean;
   msg: string;
 }
@@ -12,7 +12,7 @@ export interface ITransActions {
 }
 
 export enum TransactionType {
-  withdrawl = 'withdrawl',
+  withdrawal = 'withdrawal',
   deposit = 'deposit'
 }
 
