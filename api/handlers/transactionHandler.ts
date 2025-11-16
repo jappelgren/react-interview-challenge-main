@@ -1,22 +1,44 @@
 import { query } from "../utils/db";
 import { getAccount } from "./accountHandler";
+import { validateWithdrawal } from '../utils/transactions'
+import { ITransActions, TransactionType } from "../model/transaction";
 
 export const withdrawal = async (accountID: string, amount: number) => {
-  const account = await getAccount(accountID);
-  account.amount -= amount;
-  const res = await query(`
-    UPDATE accounts
-    SET amount = $1 
-    WHERE account_number = $2`,
-    [account.amount, accountID]
-  );
+  try {
+    await query('BEGIN')
+    const account = await getAccount(accountID);
 
-  if (res.rowCount === 0) {
-    throw new Error("Transaction failed");
+    const todaysWithdrawals = await getCurrDayTransactions(account.account_number, TransactionType.withdrawal)
+    const validWithdrawal = validateWithdrawal(amount, account, todaysWithdrawals)
+
+    if (validWithdrawal.valid) {
+      account.amount -= amount;
+      const res = await query(`
+        UPDATE accounts
+        SET amount = $1 
+        WHERE account_number = $2`,
+        [account.amount, accountID]
+      );
+
+      if (res.rowCount === 0) {
+        throw new Error("Transaction failed");
+      }
+
+      recordTransaction(account.account_number, amount, TransactionType.withdrawal)
+      await query('COMMIT')
+      return account;
+    }
+
+    throw new Error(`Invalid withdrawal. ${validWithdrawal.msg}`)
+  } catch (error) {
+    await query('ROLLBACK')
+    if (error instanceof Error) {
+      console.error(error.message)
+      throw new Error(`${error.message}`)
+    }
   }
-
-  return account;
 }
+
 
 export const deposit = async (accountID: string, amount: number) => {
   const account = await getAccount(accountID);
@@ -33,4 +55,50 @@ export const deposit = async (accountID: string, amount: number) => {
   }
 
   return account;
+}
+
+export const recordTransaction = async (accountID: number, amount: number, transactionType: TransactionType) => {
+  try {
+    const sql = `
+      INSERT INTO transactions (account_number, transaction_type, amount)
+      VALUES($1, $2, $3)
+    `;
+
+    const res = await query(sql, [accountID, transactionType, amount])
+
+    if (res.rowCount === 0) {
+      throw new Error("Transaction failed");
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error while recording transactions. Error: ${error.message}`)
+    }
+  }
+}
+
+export const getCurrDayTransactions = async (accountID: number, transactionType: TransactionType): Promise<ITransActions[]> => {
+  const yesterday = new Date();
+  const tomorrow = new Date();
+
+  yesterday.setDate(yesterday.getDate() - 1)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  try {
+    const sql = `
+      SELECT *
+      FROM transactions
+      WHERE account_number = $1
+      AND ts > date('${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}')
+      AND ts < date('${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}-${tomorrow.getDate()}')
+      AND transaction_type = $2
+    `;
+
+    const res = await query(sql, [accountID, transactionType]);
+    return res.rows
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error fetching transaction history. Error: ${error.message}`)
+    }
+  }
+  return [];
 }

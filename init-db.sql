@@ -11,6 +11,18 @@ CREATE TABLE accounts (
 ALTER TABLE accounts ADD CONSTRAINT verify_type
 CHECK (type IN ('checking', 'savings', 'credit'));
 
+DROP TABLE IF EXISTS transactions;
+CREATE TABLE transactions(
+    id SERIAL PRIMARY KEY,
+    account_number INTEGER REFERENCES accounts(account_number) NOT NULL,
+    transaction_type VARCHAR NOT NULL, 
+    amount INTEGER NOT NULL,
+    ts TIMESTAMP DEFAULT now()
+);
+
+ALTER TABLE transactions ADD CONSTRAINT verify_type
+CHECK (transaction_type IN ('deposit', 'withdrawal'));
+
 -- LOAD DATAS
 INSERT INTO accounts 
     (account_number, name, amount, type)
