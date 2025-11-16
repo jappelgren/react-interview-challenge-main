@@ -8,8 +8,8 @@ export const validateWithdrawl = (transactionAmount: number, account: IAccount, 
     return { valid: false, msg: 'Withdrawls are limited to $200 per transaction.' }
   }
 
-  if (transactionAmount % 5 > 0) {
-    return { valid: false, msg: 'ATM can only accept withdrawls which can be evenly dispersed in $5 bills.' }
+  if (transactionAmount % 5 > 0 || transactionAmount < 1) {
+    return { valid: false, msg: 'This ATM can only accept withdrawls in $5 increments.' }
   }
 
   if (transactionAmount > curBalance) {
@@ -20,8 +20,8 @@ export const validateWithdrawl = (transactionAmount: number, account: IAccount, 
   }
 
   if (withdrawls.length >= 4) {
-    return {valid: false, msg: 'This account only allows 4 withdrawls a day. Current withdrawl exceeds that limit.'}
+    return {valid: false, msg: 'This account only allows 4 withdrawls a day.'}
   }
 
   return { valid: true, msg: "ok" }
-} 
+}
