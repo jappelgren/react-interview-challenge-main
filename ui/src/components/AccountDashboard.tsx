@@ -15,9 +15,15 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
 
   const [alertContent, setAlertContent] = useState('');
   const [showAlert, setShowAlert] = useState(false);
-  const [alertType, setAlerttType] = useState<'error' | 'success' | undefined>();
+  const [alertType, setAlertType] = useState<'error' | 'success' | 'warning' | undefined>();
 
   const { signOut } = props;
+
+  const setAlertData = (msg: string, errorType: 'error' | 'success' | 'warning' | undefined): void => {
+    setAlertContent(msg);
+    setAlertType(errorType);
+    setShowAlert(true);
+  };
 
   const depositFunds = async () => {
     if (depositAmount > 0) {
@@ -30,9 +36,7 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
         const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/deposit`, requestOptions);
         const data = await response.json();
         if (data.error) {
-          setAlertContent(data.error);
-          setAlerttType('error');
-          setShowAlert(true);
+          setAlertData(data.error, 'error');
         } else {
           setAccount({
             accountNumber: data.account_number,
@@ -41,17 +45,13 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
             type: data.type,
             creditLimit: data.credit_limit
           });
-          setAlertContent('Deposit completed successfully.');
-          setAlerttType('success');
-          setShowAlert(true);
+          setAlertData('Deposit completed successfully.', 'success');
         }
       } catch (error) {
         console.error(JSON.stringify(error));
       }
     } else {
-      setAlertContent('Deposit amount must be larger than 0');
-      setAlerttType('error');
-      setShowAlert(true);
+      setAlertData('Deposit amount must be larger than 0.', 'warning');
     }
   };
 
@@ -67,9 +67,7 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
         const data = await response.json();
 
         if (data.error) {
-          setAlertContent(data.error);
-          setAlerttType('error');
-          setShowAlert(true);
+          setAlertData(data.error, 'error');
         } else {
           setAccount({
             accountNumber: data.account_number,
@@ -78,18 +76,13 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
             type: data.type,
             creditLimit: data.credit_limit
           });
-
-          setAlertContent('Withdrawal completed successfully.');
-          setAlerttType('success');
-          setShowAlert(true);
+          setAlertData('Withdrawal completed successfully.', 'success');
         }
       } catch (error) {
         console.error(JSON.stringify(error));
       }
     } else {
-      setAlertContent('Withdrawal amount must be larger than 0');
-      setAlerttType('error');
-      setShowAlert(true);
+      setAlertData('Withdrawal amount must be larger than 0.', 'warning');
     }
   };
 

@@ -9,6 +9,7 @@ export const withdrawal = async (accountID: string, amount: number) => {
     const account = await getAccount(accountID);
 
     const todaysWithdrawals = await getCurrDayTransactions(account.account_number, TransactionType.withdrawal);
+
     const validWithdrawal = validateWithdrawal(amount, account, todaysWithdrawals);
 
     if (validWithdrawal.valid) {
@@ -100,8 +101,7 @@ export const getCurrDayTransactions = async (accountID: number, transactionType:
       SELECT *
       FROM transactions
       WHERE account_number = $1
-      AND ts > date('${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}')
-      AND ts < date('${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}-${tomorrow.getDate()}')
+      AND date(ts) = current_date
       AND transaction_type = $2
     `;
 

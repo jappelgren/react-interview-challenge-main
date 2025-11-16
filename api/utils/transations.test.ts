@@ -126,7 +126,7 @@ describe('validateWithdrawal', () => {
       const result = validateWithdrawal(200, account, []);
 
       expect(result.valid).toBe(false);
-      expect(result.msg).toBe('Transaction exceeds available credit limit of 150.');
+      expect(result.msg).toBe('Transaction exceeds current available credit of 150.');
     });
 
     it('should accept withdrawals equal to balance + credit limit', () => {
