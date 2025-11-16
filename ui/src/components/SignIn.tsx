@@ -40,5 +40,5 @@ export const SignIn = (props: SignInProps) => {
               Sign In
             </Button>
           </Paper>
-  )
-}
+  );
+};
