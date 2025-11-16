@@ -25,8 +25,20 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
     setShowAlert(true);
   };
 
+  const validTransactionAmount = (amount: number, transactionType: string): boolean => {
+    if (amount <= 0) {
+      setAlertData(`${transactionType} amount must be larger than 0.`, 'warning');
+      return false;
+    }
+    if (depositAmount % 1 > 0) {
+      setAlertData(`${transactionType} amount must be in whole dollars.`, 'warning');
+      return false;
+    }
+    return true;
+  };
+
   const depositFunds = async () => {
-    if (depositAmount > 0) {
+    if (validTransactionAmount(depositAmount, 'Deposit')) {
       const requestOptions = {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -50,13 +62,11 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
       } catch (error) {
         console.error(JSON.stringify(error));
       }
-    } else {
-      setAlertData('Deposit amount must be larger than 0.', 'warning');
     }
   };
 
   const withdrawFunds = async () => {
-    if (withdrawAmount > 0) {
+    if (validTransactionAmount(withdrawAmount, 'Withdrawal')) {
       const requestOptions = {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -81,8 +91,6 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
       } catch (error) {
         console.error(JSON.stringify(error));
       }
-    } else {
-      setAlertData('Withdrawal amount must be larger than 0.', 'warning');
     }
   };
 
