@@ -1,24 +1,25 @@
-import { validateWithdrawal } from './transactions';
+import { validateDeposit, validateWithdrawal } from './transactions';
 import { AccountType, IAccount } from '../model/account';
 import { ITransActions, TransactionType } from '../model/transaction';
 
-describe('validateWithdrawal', () => {
-  const createAccount = (overrides?: Partial<IAccount>): IAccount => ({
-    account_number: 12345,
-    name: 'Test User',
-    amount: 500,
-    type: AccountType.checking,
-    ...overrides,
-  });
+const createAccount = (overrides?: Partial<IAccount>): IAccount => ({
+  account_number: 12345,
+  name: 'Test User',
+  amount: 500,
+  type: AccountType.checking,
+  ...overrides,
+});
 
-  const createTransaction = (overrides?: Partial<ITransActions>): ITransActions => ({
-    id: 1,
-    account_number: 12345,
-    transaction_type: TransactionType.withdrawal,
-    amount: 50,
-    ts: new Date().toISOString(),
-    ...overrides,
-  });
+const createTransaction = (overrides?: Partial<ITransActions>): ITransActions => ({
+  id: 1,
+  account_number: 12345,
+  transaction_type: TransactionType.withdrawal,
+  amount: 50,
+  ts: new Date().toISOString(),
+  ...overrides,
+});
+
+describe('validateWithdrawal', () => {
 
   describe('Transaction amount validation', () => {
     it('should reject withdrawals over $200', () => {
@@ -163,6 +164,98 @@ describe('validateWithdrawal', () => {
 
       expect(result.valid).toBe(true);
       expect(result.msg).toBe('ok');
+    });
+  });
+});
+
+describe('validateDeposit', () => {
+  describe('deposit amount validation', () => {
+    it('should reject deposits over $1000', () => {
+      const account = createAccount();
+      const result = validateDeposit(1001, account);
+
+      expect(result.valid).toBe(false);
+      expect(result.msg).toBe('Account deposits are capped at $1000 per transaction.');
+    });
+
+    it('should accept deposits exactly at $1000', () => {
+      const account = createAccount();
+      const result = validateDeposit(1000, account);
+
+      expect(result.valid).toBe(true);
+      expect(result.msg).toBe('ok');
+    });
+
+    it('should accept deposits under $1000', () => {
+      const account = createAccount();
+      const result = validateDeposit(999, account);
+
+      expect(result.valid).toBe(true);
+      expect(result.msg).toBe('ok');
+    });
+  });
+
+  describe('checking & savings account deposits', () => {
+    it('should accept any valid deposit amount to checking account', () => {
+      const account = createAccount({
+        type: AccountType.checking,
+        amount: 100
+      });
+      const result = validateDeposit(500, account);
+
+      expect(result.valid).toBe(true);
+      expect(result.msg).toBe('ok');
+    });
+
+    it('should accept any valid deposit amount to savings account', () => {
+      const account = createAccount({
+        type: AccountType.savings,
+        amount: 5000
+      });
+      const result = validateDeposit(750, account);
+
+      expect(result.valid).toBe(true);
+      expect(result.msg).toBe('ok');
+    });
+  });
+
+  describe('credit account deposits', () => {
+    it('should accept deposit that brings balance exactly to $0', () => {
+      const account = createAccount({
+        type: AccountType.credit,
+        amount: -500,
+        credit_limit: 5000
+      });
+      const result = validateDeposit(500, account);
+
+      expect(result.valid).toBe(true);
+      expect(result.msg).toBe('ok');
+    });
+
+    it('should accept deposit that keeps balance negative', () => {
+      const account = createAccount({
+        type: AccountType.credit,
+        amount: -800,
+        credit_limit: 5000
+      });
+      const result = validateDeposit(200, account);
+
+      expect(result.valid).toBe(true);
+      expect(result.msg).toBe('ok');
+    });
+
+    it('should reject deposit that would bring balance above $0', () => {
+      const account = createAccount({
+        type: AccountType.credit,
+        amount: -300,
+        credit_limit: 5000
+      });
+      const result = validateDeposit(400, account);
+
+      expect(result.valid).toBe(false);
+      expect(result.msg).toBe(
+        'ATM will only accept deposits at or below current negative balance of credit account. Current deposit exceeds that limit by 100.'
+      );
     });
   });
 });
