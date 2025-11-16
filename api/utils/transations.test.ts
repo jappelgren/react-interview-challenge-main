@@ -165,4 +165,4 @@ describe('validateWithdrawal', () => {
       expect(result.msg).toBe('ok');
     });
   });
-})
+});

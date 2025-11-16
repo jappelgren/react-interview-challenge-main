@@ -10,4 +10,4 @@ export enum AccountType {
   checking = 'checking',
   savings = 'savings',
   credit = 'credit'
-}
+};

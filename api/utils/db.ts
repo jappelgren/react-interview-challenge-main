@@ -9,4 +9,4 @@ export const query = async (query: string, values: any[] = []): Promise<pg.Query
   const res = await client.query(query, values);
   await client.end();
   return res;
-}
+};
