@@ -21,7 +21,7 @@ CREATE TABLE transactions(
 );
 
 ALTER TABLE transactions ADD CONSTRAINT verify_type
-CHECK (transaction_type IN ('deposit', 'withdrawl'));
+CHECK (transaction_type IN ('deposit', 'withdrawal'));
 
 -- LOAD DATAS
 INSERT INTO accounts 

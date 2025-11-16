@@ -64,7 +64,7 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
             creditLimit: data.credit_limit
           });
 
-          setAlertContent('Withdrawl completed successfully.')
+          setAlertContent('Withdrawal completed successfully.')
           setAlerttType('success')
           setShowAlert(true)
         }
@@ -72,7 +72,7 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
         console.error(JSON.stringify(error))
       }
     } else {
-      setAlertContent('Withdrawl amount must be larger than 0')
+      setAlertContent('Withdrawal amount must be larger than 0')
       setAlerttType('error')
       setShowAlert(true)
     }
