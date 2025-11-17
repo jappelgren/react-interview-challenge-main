@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"
-import { account } from "../Types/Account"
+import React, { useState } from "react";
+import { account } from "../Types/Account";
 import Paper from "@mui/material/Paper/Paper";
 import { Button, Card, CardContent, Grid, Alert, TextField } from "@mui/material";
 
@@ -15,46 +15,40 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
 
   const [alertContent, setAlertContent] = useState('');
   const [showAlert, setShowAlert] = useState(false);
-  const [alertType, setAlerttType] = useState<'error' | 'success' | undefined>()
+  const [alertType, setAlertType] = useState<'error' | 'success' | 'warning' | undefined>();
 
   const { signOut } = props;
 
-  const depositFunds = async () => {
-    const requestOptions = {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: depositAmount })
-    }
-    try {
-      const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/deposit`, requestOptions);
-      const data = await response.json();
-      setAccount({
-        accountNumber: data.account_number,
-        name: data.name,
-        amount: data.amount,
-        type: data.type,
-        creditLimit: data.credit_limit
-      });
-    } catch (error) {
-      console.error(JSON.stringify(error))
-    }
-  }
+  const setAlertData = (msg: string, errorType: 'error' | 'success' | 'warning' | undefined): void => {
+    setAlertContent(msg);
+    setAlertType(errorType);
+    setShowAlert(true);
+  };
 
-  const withdrawFunds = async () => {
-    if (withdrawAmount > 0) {
+  const validTransactionAmount = (amount: number, transactionType: string): boolean => {
+    if (amount <= 0) {
+      setAlertData(`${transactionType} amount must be larger than 0.`, 'warning');
+      return false;
+    }
+    if (depositAmount % 1 > 0) {
+      setAlertData(`${transactionType} amount must be in whole dollars.`, 'warning');
+      return false;
+    }
+    return true;
+  };
+
+  const depositFunds = async () => {
+    if (validTransactionAmount(depositAmount, 'Deposit')) {
       const requestOptions = {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: withdrawAmount })
-      }
+        body: JSON.stringify({ amount: depositAmount })
+      };
       try {
-        const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
+        const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/deposit`, requestOptions);
         const data = await response.json();
-
         if (data.error) {
-          setAlertContent(data.error)
-          setAlerttType('error')
-          setShowAlert(true)
+          setAlertData(data.error, 'error');
         } else {
           setAccount({
             accountNumber: data.account_number,
@@ -63,20 +57,42 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
             type: data.type,
             creditLimit: data.credit_limit
           });
-
-          setAlertContent('Withdrawal completed successfully.')
-          setAlerttType('success')
-          setShowAlert(true)
+          setAlertData('Deposit completed successfully.', 'success');
         }
       } catch (error) {
-        console.error(JSON.stringify(error))
+        console.error(JSON.stringify(error));
       }
-    } else {
-      setAlertContent('Withdrawal amount must be larger than 0')
-      setAlerttType('error')
-      setShowAlert(true)
     }
-  }
+  };
+
+  const withdrawFunds = async () => {
+    if (validTransactionAmount(withdrawAmount, 'Withdrawal')) {
+      const requestOptions = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: withdrawAmount })
+      };
+      try {
+        const response = await fetch(`http://localhost:3000/transactions/${account.accountNumber}/withdraw`, requestOptions);
+        const data = await response.json();
+
+        if (data.error) {
+          setAlertData(data.error, 'error');
+        } else {
+          setAccount({
+            accountNumber: data.account_number,
+            name: data.name,
+            amount: data.amount,
+            type: data.type,
+            creditLimit: data.credit_limit
+          });
+          setAlertData('Withdrawal completed successfully.', 'success');
+        }
+      } catch (error) {
+        console.error(JSON.stringify(error));
+      }
+    }
+  };
 
   return (
     <>
@@ -108,6 +124,7 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
                     margin: 'auto',
                     marginTop: 2
                   }}
+                  disabled={depositAmount <= 0}
                   onClick={depositFunds}
                 >
                   Submit
@@ -155,5 +172,5 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
           {alertContent}
         </Alert>}
     </>
-  )
-}
+  );
+};

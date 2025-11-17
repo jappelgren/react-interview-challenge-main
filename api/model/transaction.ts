@@ -14,5 +14,5 @@ export interface ITransActions {
 export enum TransactionType {
   withdrawal = 'withdrawal',
   deposit = 'deposit'
-}
+};
 

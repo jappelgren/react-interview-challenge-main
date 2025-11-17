@@ -4,8 +4,4 @@ export type account = {
   amount: number;
   type: string;
   creditLimit: number;
-}
-
-export enum ErrorTypes {
-  
-}
+};
